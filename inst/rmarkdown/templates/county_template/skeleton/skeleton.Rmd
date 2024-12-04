@@ -137,6 +137,115 @@ if(nrow(dup_check) == 0){
 }
 
 ```
+&nbsp;
+&nbsp;
+
+Check that all county names are valid
+
+```{r, echo = FALSE}
+
+valid_counties <- c("Aitkin" ,  "Anoka" ,  "Becker" ,  "Beltrami" ,  "Benton" ,  "Big Stone" ,  "Blue Earth" ,
+                    "Brown" ,  "Carlton" ,  "Carver" ,  "Cass" , 
+                    "Chippewa" ,  "Chisago" ,  "Clay" ,  "Clearwater" ,  "Cook" ,  "Cottonwood" ,  "Crow Wing", 
+                    "Dakota" ,  "Dodge" ,  "Douglas" , 
+                    "Faribault" ,  "Fillmore" ,  "Freeborn" ,  "Goodhue" ,  "Grant" ,  "Hennepin" ,  "Houston" ,
+                    "Hubbard" ,  "Isanti" ,  "Itasca" , 
+                    "Jackson" ,  "Kanabec" ,  "Kandiyohi" ,  "Kittson" ,  "Koochiching" ,  "Lac Qui Parle" ,  
+                    "Lake" ,  "Lake of the Woods" , 
+                    "Le Sueur" ,  "Lincoln" ,  "Lyon" ,  "Mahnomen" ,  "Marshall" ,  "Martin" ,  "McLeod" ,  
+                    "Meeker" ,  "Mille Lacs" ,  "Morrison" , 
+                    "Mower" ,  "Murray" ,  "Nicollet" ,  "Nobles" ,  "Norman" ,  "Olmsted" ,  "Otter Tail" ,  
+                    "Pennington" ,  "Pine" ,  "Pipestone" , 
+                    "Polk" ,  "Pope" ,  "Ramsey" ,  "Red Lake" ,  "Redwood" ,  "Renville" ,  "Rice" ,  "Rock" ,  
+                    "Roseau" ,  "Scott" ,  "Sherburne" , 
+                    "Sibley" ,  "St. Louis" ,  "Stearns" ,  "Steele" ,  "Stevens" ,  "Swift" ,  "Todd" ,  
+                    "Traverse" ,  "Wabasha" ,  "Wadena" , 
+                    "Waseca" ,  "Washington" ,  "Watonwan" ,  "Wilkin" ,  "Winona" ,  "Wright" ,  
+                    "Yellow Medicine")
+
+county_check <- county_data |> 
+  dplyr::filter(!c(county_name %in% valid_counties))
+
+if(nrow(county_check) == 0){
+  
+  print("All county names are valid")
+  
+} else{
+  
+  DT::datatable(county_check)
+  
+}
+
+```
+&nbsp;
+&nbsp;
+
+Check if MWH values are valid
+
+```{r, echo = FALSE}
+
+mwh_check <- county_data |> 
+  dplyr::filter(mwh_delivered == 0 | is.na(mwh_delivered) == TRUE)
+
+if(nrow(mwh_check) == 0){
+  
+  print("All MWH values are valid. ")
+  
+} else{
+  
+  print("The following entries have non-valid MWH values. ")
+  DT::datatable(mwh_check)
+  
+}
+
+```
+
+&nbsp;
+&nbsp;
+
+These utility county values have fluctuated 20% or more compared to the average over the last 3 years.
+
+```{sql connection=db, echo = FALSE, output.var = "county_avg"}
+WITH years_use AS(
+  SELECT DISTINCT report_year
+  FROM energy.county_sales
+  ORDER BY report_year DESC
+  LIMIT 3
+)
+SELECT TO_CHAR(utility_id, 'FM9999') AS utility_id, county_name, AVG(mwh_delivered) AS mwh_avg
+FROM energy.county_sales
+WHERE report_year IN (SELECT report_year FROM years_use)
+GROUP BY utility, utility_id, county_name
+ORDER BY utility
+
+
+```
+
+```{r, echo = FALSE}
+
+mwh_check <- county_data |> 
+  dplyr::filter(mwh_delivered != 0 & is.na(mwh_delivered) == FALSE) |> 
+  dplyr::mutate(county_name = dplyr::case_when(
+    county_name == "St. Louis" ~ "Saint Louis", 
+    TRUE ~ county_name
+  )) |> 
+  dplyr::left_join(county_avg, by = c("utility_id" = "utility_id", "county_name" = "county_name")) |> 
+  dplyr::mutate(percent_diff = (mwh_delivered / mwh_avg) - 1) |> 
+  dplyr::filter(abs(percent_diff) >= .2)
+
+DT::datatable(mwh_check)
+
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
