@@ -2,13 +2,14 @@
 title: "County Electric Sales Check"
 output: html_document
 params:
-  file_path: file_path
+  file_check: file_check
 ---
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 options(scipen = 999)
 
-county_data <- readxl::read_xlsx(file_path) |> 
+county_data <- #readxl::read_xlsx(file_path) |> 
+  file_check |> 
   janitor::clean_names()
 
 #connect to data warehouse
@@ -215,8 +216,6 @@ FROM energy.county_sales
 WHERE report_year IN (SELECT report_year FROM years_use)
 GROUP BY utility, utility_id, county_name
 ORDER BY utility
-
-
 ```
 
 ```{r, echo = FALSE}

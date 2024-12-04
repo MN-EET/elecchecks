@@ -4,10 +4,12 @@
 \alias{county_check}
 \title{County Check}
 \usage{
-county_check(file_path)
+county_check(file_check, dest_dir)
 }
 \arguments{
-\item{file_path}{The path to the county electricity file that needs to be checked}
+\item{file_check}{A county electricity table that needs to be checked}
+
+\item{dest_dir}{The directory that you want the markdown file written to}
 }
 \value{
 An HTML markdown document
