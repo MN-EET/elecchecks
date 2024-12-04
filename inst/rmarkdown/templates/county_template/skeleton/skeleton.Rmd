@@ -1,7 +1,5 @@
 ---
-title: "Template Title"
-author: "Your Name"
-date: "The Date"
+title: "County Electric Sales Check"
 output: html_document
 params:
   file_path: file_path
