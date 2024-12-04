@@ -4,13 +4,139 @@ author: "Your Name"
 date: "The Date"
 output: html_document
 params:
-  message: "hello"
+  file_path: file_path
 ---
 
-```{r, echo = FALSE, include = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+options(scipen = 999)
 
-readxl::reaxlsx()
+county_data <- readxl::read_xlsx(file_path) |> 
+  janitor::clean_names()
+
+#connect to data warehouse
+db <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
+                 dbname = keyring::key_get("warehouse_name"), 
+                 host = keyring::key_get("warehouse_host"), 
+                 port = keyring::key_get("warehouse_port"), 
+                 user = keyring::key_get("warehouse_user"), 
+                 password = keyring::key_get("warehouse_password"))
 
 ```
+
+```{sql connection=db, echo = FALSE, output.var = "utility_table"}
+
+SELECT DISTINCT utility_name, mn_utility_id AS utility_id
+FROM energy.utility_info 
+
+```
+
+Check for duplicate entries
+
+```{r, echo = FALSE}
+
+dup_check <- county_data |> 
+  dplyr::mutate(row_id = paste(utility_id, county_name, as.character(year), sep = "_")) |> 
+  dplyr::group_by(row_id) |> 
+  dplyr::mutate(count = dplyr::n()) |> 
+  dplyr::filter(count > 1)
+
+if(nrow(dup_check) == 0){
+  
+  print("No duplicates found")
+  
+} else{
+  
+  print("The following rows are duplicates")
+  
+  DT::datatable(dup_check)
+  
+}
+  
+```
+&nbsp;
+&nbsp;
+
+The following utilities do not have standardized names 
+
+```{r, echo = FALSE}
+
+u_names <- county_data |> 
+  dplyr::filter(!c(utility %in% utility_table$utility_name)) |> 
+  dplyr::select(utility, utility_id) |> 
+  dplyr::distinct(utility, utility_id)
+
+DT::datatable(u_names)
+
+```
+&nbsp;
+&nbsp;
+
+The following ID's are not valid
+
+```{r, echo = FALSE}
+
+u_ids <- county_data |> 
+  dplyr::filter(!c(utility_id %in% utility_table$utility_id)) |> 
+  dplyr::select(utility, utility_id) |> 
+  dplyr::distinct(utility, utility_id)
+
+DT::datatable(u_ids)
+
+```
+
+&nbsp;
+&nbsp;
+
+Check that each utility ID is assigned to only one utility
+```{r, echo = FALSE}
+
+dup_check <- county_data |> 
+  dplyr::select(utility_id, utility) |> 
+  dplyr::distinct() |> 
+  dplyr::group_by(utility_id) |> 
+  dplyr::mutate(id_count = dplyr::n()) |> 
+  dplyr::filter(id_count > 1)
+
+if(nrow(dup_check) == 0){
+  
+  print("No duplicates found")
+  
+} else{
+  
+  print("The following rows are duplicates")
+  
+  DT::datatable(dup_check)
+  
+}
+
+```
+&nbsp;
+&nbsp;
+
+Check that each utility is only assigned on ID
+
+```{r, echo = FALSE}
+
+dup_check <- county_data |> 
+  dplyr::select(utility, utility_id) |> 
+  dplyr::distinct() |> 
+  dplyr::group_by(utility) |> 
+  dplyr::mutate(id_count = dplyr::n()) |> 
+  dplyr::filter(id_count > 1)
+
+if(nrow(dup_check) == 0){
+  
+  print("No duplicates found")
+  
+} else{
+  
+  print("The following rows are duplicates")
+  
+  DT::datatable(dup_check)
+  
+}
+
+```
+
 
 

@@ -1,15 +1,15 @@
 #' County Check
 #'
-#' @param message a message to write
+#' @param file_path The path to the county electricity file that needs to be checked
 #'
-#' @return
-#' @export An HTML markdown document
+#' @return An HTML markdown document
+#' @export
 #'
 #' @examples
-county_check <- function(message){
+county_check <- function(file_path){
   rmarkdown::render("inst/rmarkdown/templates/county_template/skeleton/skeleton.Rmd",
                     params = list(
-                      message = message
+                      file_path = file_path
                     ))
 }
 
