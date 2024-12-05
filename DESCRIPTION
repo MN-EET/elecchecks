@@ -15,4 +15,5 @@ Imports:
     janitor,
     keyring,
     readxl,
-    RPostgreSQL
+    RPostgreSQL,
+    tibble

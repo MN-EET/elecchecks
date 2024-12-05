@@ -36,7 +36,24 @@ FROM energy.utility_info
 
 Check for duplicate entries
 ```{r, echo = FALSE}
-dup_check(class_data)
+dup_check <- class_data |>
+  dplyr::mutate(row_id = paste(utility_id, classification_of_energy_delivered_to_ultimate_consumers,
+                               as.character(year), sep = "_")) |> 
+                  dplyr::group_by(row_id) |>
+  dplyr::mutate(count = dplyr::n()) |>
+  dplyr::filter(count > 1)
+
+if(nrow(dup_check) == 0){
+
+  print("No duplicates found")
+
+} else{
+
+  print("The following rows are duplicates")
+
+  DT::datatable(dup_check)
+
+}
 ```
 
 

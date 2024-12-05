@@ -1,32 +1,24 @@
-#' Duplicate Check
+#' Utility Name Check
 #'
-#' @param data_check Data set that is being checked
+#' @param data_check A dataset to check
+#' @param utility_table A list of valid utility names
 #'
-#' @return A table of duplicates
+#' @return A table of non-valid utility names
 #' @export
 #'
 #' @examples
 #' dir <- system.file("extdata", package = "elecchecks")
-#' file_check <- readxl::read_xlsx(paste(dir, "county_data.xlsx", sep = "/"))
-#' dup_check(file_check)
-dup_check <- function(data_check){
+#' file_check <- readxl::read_xlsx(paste(dir, "electric_class.xlsx", sep = "/"))
+#' name_table <- tibble::tribble(~utility_name, "some_name")
+#' valid_name_check(file_check, name_table)
+valid_name_check <- function(data_check, utility_table){
 
-  dup_check <- data_check |>
-    dplyr::mutate(row_id = paste(utility_id, county_name, as.character(year), sep = "_")) |>
-    dplyr::group_by(row_id) |>
-    dplyr::mutate(count = dplyr::n()) |>
-    dplyr::filter(count > 1)
+  u_names <- data_check |>
+    janitor::clean_names() |>
+    dplyr::filter(!c(utility %in% utility_table$utility_name)) |>
+    dplyr::select(utility, utility_id) |>
+    dplyr::distinct(utility, utility_id)
 
-  if(nrow(dup_check) == 0){
-
-    print("No duplicates found")
-
-  } else{
-
-    print("The following rows are duplicates")
-
-    DT::datatable(dup_check)
-
-  }
+  DT::datatable(u_names)
 
 }

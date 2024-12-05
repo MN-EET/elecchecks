@@ -2,5 +2,5 @@
 
 export(class_check)
 export(county_check)
-export(dup_check)
 export(set_credentials)
+export(valid_name_check)

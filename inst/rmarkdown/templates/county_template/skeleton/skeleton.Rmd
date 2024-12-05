@@ -37,24 +37,24 @@ FROM energy.utility_info
 Check for duplicate entries
 
 ```{r, echo = FALSE}
-dup_check(county_data)
-# dup_check <- county_data |> 
-#   dplyr::mutate(row_id = paste(utility_id, county_name, as.character(year), sep = "_")) |> 
-#   dplyr::group_by(row_id) |> 
-#   dplyr::mutate(count = dplyr::n()) |> 
-#   dplyr::filter(count > 1)
-# 
-# if(nrow(dup_check) == 0){
-#   
-#   print("No duplicates found")
-#   
-# } else{
-#   
-#   print("The following rows are duplicates")
-#   
-#   DT::datatable(dup_check)
-#   
-# }
+
+dup_check <- county_data |>
+  dplyr::mutate(row_id = paste(utility_id, county_name, as.character(year), sep = "_")) |>
+  dplyr::group_by(row_id) |>
+  dplyr::mutate(count = dplyr::n()) |>
+  dplyr::filter(count > 1)
+
+if(nrow(dup_check) == 0){
+
+  print("No duplicates found")
+
+} else{
+
+  print("The following rows are duplicates")
+
+  DT::datatable(dup_check)
+
+}
   
 ```
 &nbsp;
@@ -63,13 +63,13 @@ dup_check(county_data)
 The following utilities do not have standardized names 
 
 ```{r, echo = FALSE}
-
-u_names <- county_data |> 
-  dplyr::filter(!c(utility %in% utility_table$utility_name)) |> 
-  dplyr::select(utility, utility_id) |> 
-  dplyr::distinct(utility, utility_id)
-
-DT::datatable(u_names)
+valid_names_check(county_data, utility_table)
+# u_names <- county_data |> 
+#   dplyr::filter(!c(utility %in% utility_table$utility_name)) |> 
+#   dplyr::select(utility, utility_id) |> 
+#   dplyr::distinct(utility, utility_id)
+# 
+# DT::datatable(u_names)
 
 ```
 &nbsp;
