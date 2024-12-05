@@ -7,8 +7,13 @@
 #' @export
 #'
 #' @examples
+#' dest_dir <- getwd()
+#' dir <- system.file("extdata", package = "elecchecks")
+#' file_check <- readxl::read_xlsx(paste(dir, "county_data.xlsx", sep = "/"))
+#' county_check(file_check, dest_dir)
 county_check <- function(file_check, dest_dir){
-  rmarkdown::render("inst/rmarkdown/templates/county_template/skeleton/skeleton.Rmd",
+
+  rmarkdown::render("rmarkdown/templates/county_template/skeleton/skeleton.Rmd",
                     params = list(
                       file_check = file_check
                     ),

@@ -17,3 +17,9 @@ An HTML markdown document
 \description{
 County Check
 }
+\examples{
+dest_dir <- getwd()
+dir <- system.file("extdata", package = "elecchecks")
+file_check <- readxl::read_xlsx(paste(dir, "county_data.xlsx", sep = "/"))
+county_check(file_check, dest_dir)
+}
