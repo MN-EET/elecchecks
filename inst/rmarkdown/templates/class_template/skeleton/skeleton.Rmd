@@ -1,0 +1,30 @@
+---
+title: "Electric Class Check"
+output: html_document
+params: 
+  file_check: file_check
+  dbname: dbname
+  host: host
+  port: port
+  user: user
+  password: password
+---
+
+```{r, echo = FALSE, include = FALSE, warning = FALSE, message = FALSE}
+
+options(scipen = 999)
+
+county_data <- file_check |> 
+  janitor::clean_names()
+
+#connect to data warehouse
+db <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
+                 dbname = dbname, 
+                 host = host, 
+                 port = port, 
+                 user = user, 
+                 password = password)
+
+
+```
+

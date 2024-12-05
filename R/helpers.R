@@ -1,38 +1,32 @@
-#' County Check
+#' Title
 #'
-#' @param file_check A county electricity table that needs to be checked
-#' @param dest_dir The directory that you want the markdown file written to
+#' @param data_check Data set that is being checked
 #'
-#' @return An HTML markdown document
+#' @return A table of duplicates
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' dest_dir <- getwd()
 #' dir <- system.file("extdata", package = "elecchecks")
 #' file_check <- readxl::read_xlsx(paste(dir, "county_data.xlsx", sep = "/"))
-#' county_check(file_check, dest_dir)
-#' }
-county_check <- function(file_check, dest_dir){
+#' dup_check(file_check)
+dup_check <- function(data_check){
 
-  markdown_path <- system.file("rmarkdown/templates/county_template/skeleton", "skeleton.Rmd", package = "elecchecks")
+  dup_check <- data_check |>
+    dplyr::mutate(row_id = paste(utility_id, county_name, as.character(year), sep = "_")) |>
+    dplyr::group_by(row_id) |>
+    dplyr::mutate(count = dplyr::n()) |>
+    dplyr::filter(count > 1)
 
-  dbname <- keyring::key_get("warehouse_name")
-  host <- keyring::key_get("warehouse_host")
-  port <- keyring::key_get("warehouse_port")
-  user <- keyring::key_get("warehouse_user")
-  password <- keyring::key_get("warehouse_password")
+  if(nrow(dup_check) == 0){
 
-  rmarkdown::render(markdown_path,
-                    params = list(
-                      file_check = file_check,
-                      dbname = dbname,
-                      host = host,
-                      port = port,
-                      user = user,
-                      password = password
-                    ),
-                    output_file = "REIS County Electricity Sales.html",
-                    output_dir = dest_dir)
+    print("No duplicates found")
+
+  } else{
+
+    print("The following rows are duplicates")
+
+    DT::datatable(dup_check)
+
+  }
+
 }
-
