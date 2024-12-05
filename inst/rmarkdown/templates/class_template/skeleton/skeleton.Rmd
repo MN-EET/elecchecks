@@ -25,6 +25,21 @@ db <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
                  user = user, 
                  password = password)
 
+```
+
+```{sql connection=db, echo = FALSE, output.var = "utility_table"}
+
+SELECT DISTINCT utility_name, mn_utility_id AS utility_id
+FROM energy.utility_info 
 
 ```
+
+Check for duplicate entries
+```{r, echo = FALSE}
+dup_check()
+```
+
+
+
+
 

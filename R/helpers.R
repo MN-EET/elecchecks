@@ -1,4 +1,4 @@
-#' Title Duplicate Check
+#' Duplicate Check
 #'
 #' @param data_check Data set that is being checked
 #'
