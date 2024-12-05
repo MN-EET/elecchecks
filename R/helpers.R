@@ -13,7 +13,7 @@
 #' county_check(file_check, dest_dir)
 county_check <- function(file_check, dest_dir){
 
-  rmarkdown::render("rmarkdown/templates/county_template/skeleton/skeleton.Rmd",
+  rmarkdown::render("../rmarkdown/templates/county_template/skeleton/skeleton.Rmd",
                     params = list(
                       file_check = file_check
                     ),
