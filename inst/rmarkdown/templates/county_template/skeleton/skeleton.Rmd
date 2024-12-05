@@ -63,7 +63,7 @@ if(nrow(dup_check) == 0){
 The following utilities do not have standardized names 
 
 ```{r, echo = FALSE}
-elecchecks::valid_name_check(county_data, utility_table)
+valid_name_check(county_data, utility_table)
 # u_names <- county_data |> 
 #   dplyr::filter(!c(utility %in% utility_table$utility_name)) |> 
 #   dplyr::select(utility, utility_id) |> 
