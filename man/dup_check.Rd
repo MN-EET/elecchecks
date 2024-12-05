@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{dup_check}
 \alias{dup_check}
-\title{Title}
+\title{Duplicate Check}
 \usage{
 dup_check(data_check)
 }
@@ -13,7 +13,7 @@ dup_check(data_check)
 A table of duplicates
 }
 \description{
-Title
+Duplicate Check
 }
 \examples{
 dir <- system.file("extdata", package = "elecchecks")
