@@ -3,4 +3,5 @@
 export(class_check)
 export(county_check)
 export(set_credentials)
+export(valid_id_check)
 export(valid_name_check)

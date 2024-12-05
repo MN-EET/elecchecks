@@ -64,13 +64,6 @@ The following utilities do not have standardized names
 
 ```{r, echo = FALSE}
 valid_name_check(county_data, utility_table)
-# u_names <- county_data |> 
-#   dplyr::filter(!c(utility %in% utility_table$utility_name)) |> 
-#   dplyr::select(utility, utility_id) |> 
-#   dplyr::distinct(utility, utility_id)
-# 
-# DT::datatable(u_names)
-
 ```
 &nbsp;
 &nbsp;
@@ -78,13 +71,13 @@ valid_name_check(county_data, utility_table)
 The following ID's are not valid
 
 ```{r, echo = FALSE}
-
-u_ids <- county_data |> 
-  dplyr::filter(!c(utility_id %in% utility_table$utility_id)) |> 
-  dplyr::select(utility, utility_id) |> 
-  dplyr::distinct(utility, utility_id)
-
-DT::datatable(u_ids)
+valid_id_check(county_data, utility_table)
+# u_ids <- county_data |> 
+#   dplyr::filter(!c(utility_id %in% utility_table$utility_id)) |> 
+#   dplyr::select(utility, utility_id) |> 
+#   dplyr::distinct(utility, utility_id)
+# 
+# DT::datatable(u_ids)
 
 ```
 
