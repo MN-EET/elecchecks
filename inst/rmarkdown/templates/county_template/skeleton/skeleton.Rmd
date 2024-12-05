@@ -3,9 +3,15 @@ title: "County Electric Sales Check"
 output: html_document
 params:
   file_check: file_check
+  dbname: dbname
+  host: host
+  port: port
+  user: user
+  password: password
 ---
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
+
 options(scipen = 999)
 
 county_data <- #readxl::read_xlsx(file_path) |> 
@@ -14,11 +20,11 @@ county_data <- #readxl::read_xlsx(file_path) |>
 
 #connect to data warehouse
 db <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
-                 dbname = keyring::key_get("warehouse_name"), 
-                 host = keyring::key_get("warehouse_host"), 
-                 port = keyring::key_get("warehouse_port"), 
-                 user = keyring::key_get("warehouse_user"), 
-                 password = keyring::key_get("warehouse_password"))
+                 dbname = dbname, 
+                 host = host, 
+                 port = port, 
+                 user = user, 
+                 password = password)
 
 ```
 

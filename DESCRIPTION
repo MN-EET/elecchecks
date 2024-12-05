@@ -13,5 +13,6 @@ Imports:
     dplyr,
     DT,
     janitor,
+    keyring,
     readxl,
     RPostgreSQL
