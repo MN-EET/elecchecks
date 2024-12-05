@@ -14,8 +14,7 @@ params:
 
 options(scipen = 999)
 
-county_data <- #readxl::read_xlsx(file_path) |> 
-  file_check |> 
+county_data <- file_check |> 
   janitor::clean_names()
 
 #connect to data warehouse
