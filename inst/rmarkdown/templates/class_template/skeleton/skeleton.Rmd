@@ -55,6 +55,12 @@ if(nrow(dup_check) == 0){
 
 }
 ```
+&nbsp;
+&nbsp;
+The following utilities do not have standardized names 
+```{r, echo = FALSE}
+valid_name_check(class_data, utility_table)
+```
 
 
 
