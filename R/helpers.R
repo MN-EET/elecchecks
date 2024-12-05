@@ -13,7 +13,9 @@
 #' county_check(file_check, dest_dir)
 county_check <- function(file_check, dest_dir){
 
-  rmarkdown::render("../rmarkdown/templates/county_template/skeleton/skeleton.Rmd",
+  markdown_path <- system.file("rmarkdown/templates/county_template/skeleton", "skeleton.Rmd", package = "elecchecks")
+
+  rmarkdown::render(markdown_path,
                     params = list(
                       file_check = file_check
                     ),
