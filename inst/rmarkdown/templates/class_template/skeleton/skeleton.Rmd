@@ -14,7 +14,7 @@ params:
 
 options(scipen = 999)
 
-county_data <- file_check |> 
+class_data <- file_check |> 
   janitor::clean_names()
 
 #connect to data warehouse
@@ -36,7 +36,7 @@ FROM energy.utility_info
 
 Check for duplicate entries
 ```{r, echo = FALSE}
-dup_check()
+dup_check(class_data)
 ```
 
 
