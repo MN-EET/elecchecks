@@ -7,10 +7,12 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' dest_dir <- getwd()
 #' dir <- system.file("extdata", package = "elecchecks")
 #' file_check <- readxl::read_xlsx(paste(dir, "county_data.xlsx", sep = "/"))
 #' county_check(file_check, dest_dir)
+#' }
 county_check <- function(file_check, dest_dir){
 
   markdown_path <- system.file("rmarkdown/templates/county_template/skeleton", "skeleton.Rmd", package = "elecchecks")
