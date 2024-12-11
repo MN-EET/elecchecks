@@ -46,3 +46,36 @@ valid_id_check <- function(data_check, utility_table){
   DT::datatable(u_ids)
 
 }
+
+
+#' Duplicate ID Check
+#'
+#' @param data_check
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dup_name_check <- function(data_check){
+
+  dup_check <- data_check |>
+    dplyr::select(utility_id, utility) |>
+    dplyr::distinct() |>
+    dplyr::group_by(utility_id) |>
+    dplyr::mutate(id_count = dplyr::n()) |>
+    dplyr::filter(id_count > 1)
+
+  if(nrow(dup_check) == 0){
+
+    print("No duplicates found")
+
+  } else{
+
+    print("The following rows are duplicates")
+
+    DT::datatable(dup_check)
+
+  }
+
+
+}
