@@ -86,7 +86,7 @@ valid_id_check(county_data, utility_table)
 
 Check that each utility ID is assigned to only one utility
 ```{r, echo = FALSE}
-dup_name_check()
+dup_name_check(county_data)
 # dup_check <- county_data |> 
 #   dplyr::select(utility_id, utility) |> 
 #   dplyr::distinct() |> 
