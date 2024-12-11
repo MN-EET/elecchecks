@@ -66,10 +66,22 @@ valid_name_check(class_data, utility_table)
 &nbsp;
 The following utilities do not have standardized IDs
 
-```{r}
+```{r, echo = FALSE}
 valid_id_check(class_data, utility_table)
 ```
 
+Check that each utility ID is assigned to only one utility
+
+```{r, echo = FALSE}
+
+dup_name_check(class_data)
+
+```
+Check that each utility is only assigned on ID
+
+```{r, echo = FALSE}
+dup_id_check(class_data)
+```
 
 
 
