@@ -48,14 +48,17 @@ valid_id_check <- function(data_check, utility_table){
 }
 
 
-#' Duplicate ID Check
+#' Check that IDs are Associated with One Name
 #'
 #' @param data_check
 #'
-#' @return
+#' @return A table of duplicates
 #' @export
 #'
 #' @examples
+#' dir <- system.file("extdata", package = "elecchecks")
+#' file_check <- readxl::read_xlsx(paste(dir, "electric_class.xlsx", sep = "/"))
+#' dup_name_check(file_check)
 dup_name_check <- function(data_check){
 
   dup_check <- data_check |>
@@ -77,5 +80,40 @@ dup_name_check <- function(data_check){
 
   }
 
+
+}
+
+
+#' Check That Names are Associated with One ID
+#'
+#' @param data_check
+#'
+#' @return A table of duplicates
+#' @export
+#'
+#' @examples
+#' dir <- system.file("extdata", package = "elecchecks")
+#' file_check <- readxl::read_xlsx(paste(dir, "electric_class.xlsx", sep = "/"))
+#' dup_id_check(file_check)
+dup_id_check <- function(data_check){
+
+  dup_check <- data_check |>
+    dplyr::select(utility, utility_id) |>
+    dplyr::distinct() |>
+    dplyr::group_by(utility) |>
+    dplyr::mutate(id_count = dplyr::n()) |>
+    dplyr::filter(id_count > 1)
+
+  if(nrow(dup_check) == 0){
+
+    print("No duplicates found")
+
+  } else{
+
+    print("The following rows are duplicates")
+
+    DT::datatable(dup_check)
+
+  }
 
 }
