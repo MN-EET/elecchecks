@@ -1,0 +1,300 @@
+---
+title: "Month Customer Sales Check"
+output: html_document
+params:
+  file_check: file_check
+  dbname: dbname
+  host: host
+  port: port
+  user: user
+  password: password
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+
+options(scipen = 999)
+
+month_data <- file_check |> 
+  janitor::clean_names()
+
+#connect to data warehouse
+db <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
+                 dbname = dbname, 
+                 host = host, 
+                 port = port, 
+                 user = user, 
+                 password = password)
+
+```
+
+```{sql connection=db, echo = FALSE, output.var = "utility_table"}
+
+SELECT DISTINCT utility_name, mn_utility_id AS utility_id
+FROM energy.utility_info 
+
+```
+
+Check for duplicate entries
+
+```{r, echo = FALSE}
+
+dup_check <- month_data |>
+  dplyr::mutate(row_id = paste(utility_id, month, customer_type, as.character(report_year), sep = "_")) |>
+  dplyr::group_by(row_id) |>
+  dplyr::mutate(count = dplyr::n()) |>
+  dplyr::filter(count > 1)
+
+if(nrow(dup_check) == 0){
+
+  print("No duplicates found")
+
+} else{
+
+  print("The following rows are duplicates")
+
+  DT::datatable(dup_check)
+
+}
+  
+```
+&nbsp;
+&nbsp;
+
+The following utilities do not have standardized names 
+
+```{r, echo = FALSE}
+valid_name_check(month_data, utility_table)
+```
+&nbsp;
+&nbsp;
+
+The following ID's are not valid
+
+```{r, echo = FALSE}
+valid_id_check(month_data, utility_table)
+# u_ids <- month_data |> 
+#   dplyr::filter(!c(utility_id %in% utility_table$utility_id)) |> 
+#   dplyr::select(utility, utility_id) |> 
+#   dplyr::distinct(utility, utility_id)
+# 
+# DT::datatable(u_ids)
+
+```
+
+&nbsp;
+&nbsp;
+
+Check that each utility ID is assigned to only one utility
+```{r, echo = FALSE}
+dup_name_check(month_data)
+```
+&nbsp;
+&nbsp;
+
+Check that each utility is only assigned on ID
+
+```{r, echo = FALSE}
+dup_id_check(month_data)
+```
+&nbsp;
+&nbsp;
+
+Check that all customer types are valid
+
+```{r, echo = FALSE}
+
+valid_units  <- c("Non-Farm Residential",
+                  "Residential With Space Heat",
+                  "Farm",
+                  "Small Commercial & Industrial",
+                  "Large Commercial & Industrial",
+                  "Street & Highway Lighting",
+                  "Other (Include Municipals)",
+                  "Irrigation",
+                  "Mining",
+                  "Total"
+)
+
+unit_check <- month_data |> 
+  dplyr::filter(!c(customer_type %in% valid_units))
+
+if(nrow(unit_check) == 0){
+  
+  print("All customer types are valid")
+  
+} else{
+  
+  DT::datatable(unit_check)
+  
+}
+
+```
+&nbsp;
+&nbsp;
+
+Check that all months are valid
+
+```{r, echo = FALSE}
+
+valid_months <- c("January", "February", "March", "April", "May", "June", "July", "August", 
+                  "September", "October", "November", "December")
+
+month_check <- month_data |> 
+  dplyr::filter(!c(month %in% valid_months))
+
+if(nrow(month_check) == 0){
+  
+  print("All months are valid")
+  
+} else{
+  
+  DT::datatable(month_check)
+  
+}
+
+```
+&nbsp;
+&nbsp;
+
+Check that each utility/month/customer type combination appears only once.
+
+```{r, echo = FALSE}
+
+dup_check <- month_data |> 
+  dplyr::group_by(utility, month, customer_type, report_year) |> 
+  dplyr::summarize(count = n()) |> 
+  dplyr::filter(count > 1)
+
+
+if(nrow(dup_check) == 0){
+  
+  print("No duplicates found.")
+  
+} else{
+  
+  DT::datatable(dup_check)
+  
+}
+
+```
+
+
+&nbsp;
+&nbsp;
+
+Check if utilities have valid MWH values
+
+```{r, echo = FALSE}
+
+mwh_check <- month_data |> 
+  dplyr::filter(mwh_delivered == 0 | is.na(mwh_delivered) == TRUE) |> 
+  dplyr::select(utility) |> 
+  dplyr::arrange(utility) |> 
+  dplyr::distinct()
+
+if(nrow(mwh_check) == 0){
+  
+  print("All MWH values are valid. ")
+  
+} else{
+  
+  print("The following utilities have non-valid MWH values. ")
+  DT::datatable(mwh_check)
+  
+}
+
+```
+
+&&nbsp;
+&&nbsp;
+
+Here are the numbers of MWH values entered as either 0 or NA
+
+```{r}
+mwh_check <- month_data |> 
+  dplyr::filter(mwh_delivered == 0 | is.na(mwh_delivered) == TRUE) |> 
+  dplyr::mutate(invalid_type = ifelse(is.na(mwh_delivered) == TRUE, "Value is NA", "Value is 0")) |> 
+  dplyr::group_by(invalid_type) |> 
+  dplyr::summarize(count = dplyr::n())
+
+DT::datatable(mwh_check)
+```
+
+&nbsp;
+&nbsp;
+
+NEED TO EDIT WHEN DATA WAREHOUSE OUT
+These utility county values have fluctuated 200% or more compared to the average for that customer type over the last 3 years.
+
+```{sql connection=db, echo = FALSE, output.var = "month_avg"}
+WITH years_use AS (
+	SELECT DISTINCT report_year
+	FROM energy.month_customer_sales mcs 
+	ORDER BY report_year DESC 
+	LIMIT 3
+)
+SELECT TO_CHAR(m.utility_id, 'FM9999') AS utility_id, m.utility, m.month, m.customer_type, 
+	ROUND(AVG(m.customer_count)) AS avg_customer_count, ROUND(AVG(m.mwh_delivered)) AS avg_mwh
+FROM energy.month_customer_sales m
+WHERE m.report_year IN (SELECT * FROM years_use) 
+GROUP BY m.utility_id, m.utility, m.customer_type, m.MONTH
+HAVING ROUND(AVG(m.customer_count)) IS NOT NULL AND 
+	ROUND(AVG(m.customer_count)) != 0  AND ROUND(AVG(m.customer_count)) IS NOT NULL
+```
+
+```{r, echo = FALSE}
+
+mwh_check <- month_data |> 
+  dplyr::filter(mwh_delivered != 0 & is.na(mwh_delivered) == FALSE) |> 
+  dplyr::left_join(month_avg, by = c("utility_id" = "utility_id", "utility" = "utility", "month" = "month", "customer_type" = "customer_type")) |> 
+  dplyr::mutate(percent_diff = (mwh_delivered / avg_mwh) - 1, 
+                numeric_diff = (mwh_delivered - avg_mwh)) |> 
+  dplyr::filter(abs(percent_diff) >= 2 & abs(numeric_diff) > 100) |> 
+  dplyr::select(utility, utility_id, month, customer_type, mwh_delivered, avg_mwh, percent_diff, customer_count, avg_customer_count) |> 
+  dplyr::arrange(utility, customer_type, month)
+
+DT::datatable(mwh_check)
+
+```
+
+&nbsp;
+&nbsp;
+
+Here are the specific utilities and customer types that had changes of over 200% in monthly MWH sales by customer type and an absolute change of at least 100 MWH. 
+
+```{r, echo = FALSE}
+mwh_check <- mwh_check |> 
+  select(utility, utility_id, customer_type) |> 
+  distinct() |> 
+  arrange(utility, customer_type)
+
+DT::datatable(mwh_check)
+```
+
+&nbsp;
+&nbsp;
+
+These utilities had increases of at least 50 times greater than their previous 3 year average for a given customer class and month and had a change of at least 100 MWH.
+
+```{r, echo = FALSE}
+mwh_check <- month_data |> 
+  dplyr::filter(mwh_delivered != 0 & is.na(mwh_delivered) == FALSE) |> 
+  dplyr::left_join(month_avg, by = c("utility_id" = "utility_id", "utility" = "utility", "month" = "month", "customer_type" = "customer_type")) |> 
+  dplyr::mutate(percent_diff = (mwh_delivered / avg_mwh) - 1, 
+                numeric_diff = (mwh_delivered - avg_mwh)) |> 
+  dplyr::filter(abs(percent_diff) >= 50 & abs(numeric_diff) > 100) |> 
+  dplyr::select(utility, utility_id, month, customer_type, mwh_delivered, avg_mwh, percent_diff, customer_count, avg_customer_count) |> 
+  dplyr::arrange(utility, customer_type, month)
+
+DT::datatable(mwh_check)
+```
+
+
+
+
+
+
+
+
+
+

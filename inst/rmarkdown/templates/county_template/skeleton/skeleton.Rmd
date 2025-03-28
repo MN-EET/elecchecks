@@ -87,25 +87,6 @@ valid_id_check(county_data, utility_table)
 Check that each utility ID is assigned to only one utility
 ```{r, echo = FALSE}
 dup_name_check(county_data)
-# dup_check <- county_data |> 
-#   dplyr::select(utility_id, utility) |> 
-#   dplyr::distinct() |> 
-#   dplyr::group_by(utility_id) |> 
-#   dplyr::mutate(id_count = dplyr::n()) |> 
-#   dplyr::filter(id_count > 1)
-# 
-# if(nrow(dup_check) == 0){
-#   
-#   print("No duplicates found")
-#   
-# } else{
-#   
-#   print("The following rows are duplicates")
-#   
-#   DT::datatable(dup_check)
-#   
-# }
-
 ```
 &nbsp;
 &nbsp;
@@ -114,25 +95,6 @@ Check that each utility is only assigned on ID
 
 ```{r, echo = FALSE}
 dup_id_check(county_data)
-# dup_check <- county_data |> 
-#   dplyr::select(utility, utility_id) |> 
-#   dplyr::distinct() |> 
-#   dplyr::group_by(utility) |> 
-#   dplyr::mutate(id_count = dplyr::n()) |> 
-#   dplyr::filter(id_count > 1)
-# 
-# if(nrow(dup_check) == 0){
-#   
-#   print("No duplicates found")
-#   
-# } else{
-#   
-#   print("The following rows are duplicates")
-#   
-#   DT::datatable(dup_check)
-#   
-# }
-
 ```
 &nbsp;
 &nbsp;

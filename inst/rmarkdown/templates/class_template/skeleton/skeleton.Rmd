@@ -83,5 +83,17 @@ Check that each utility is only assigned on ID
 dup_id_check(class_data)
 ```
 
+Check for invalid customer classes
+
+```{sql connection = db, echo = FALSE, output.var = "valid_classes"}
+SELECT DISTINCT customer_type 
+FROM energy.all_class
+```
+
+```{r, echo = FALSE}
+class_data |> 
+  dplyr::rename(class = classification_of_energy_delivered_to_ultimate_consumers) |> 
+  dplyr::filter(!c(class %in% valid_classes$customer_type) & class != "Entered Total")
+```
 
 

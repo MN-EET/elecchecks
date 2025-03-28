@@ -39,6 +39,7 @@ valid_name_check <- function(data_check, utility_table){
 valid_id_check <- function(data_check, utility_table){
 
   u_ids <- data_check |>
+    janitor::clean_names() |>
     dplyr::filter(!c(utility_id %in% utility_table$utility_id)) |>
     dplyr::select(utility, utility_id) |>
     dplyr::distinct(utility, utility_id)
@@ -62,6 +63,7 @@ valid_id_check <- function(data_check, utility_table){
 dup_name_check <- function(data_check){
 
   dup_check <- data_check |>
+    janitor::clean_names() |>
     dplyr::select(utility_id, utility) |>
     dplyr::distinct() |>
     dplyr::group_by(utility_id) |>
@@ -98,6 +100,7 @@ dup_name_check <- function(data_check){
 dup_id_check <- function(data_check){
 
   dup_check <- data_check |>
+    janitor::clean_names() |>
     dplyr::select(utility, utility_id) |>
     dplyr::distinct() |>
     dplyr::group_by(utility) |>

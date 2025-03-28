@@ -2,6 +2,10 @@
 
 export(class_check)
 export(county_check)
+export(dup_id_check)
+export(dup_name_check)
+export(month_customer_sales_check)
 export(set_credentials)
+export(space_heating_check)
 export(valid_id_check)
 export(valid_name_check)
