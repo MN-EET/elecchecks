@@ -16,5 +16,6 @@ Imports:
     keyring,
     readxl,
     RPostgreSQL,
+    stats,
     tibble,
     workflows
