@@ -162,7 +162,7 @@ Check that each utility/month/customer type combination appears only once.
 
 dup_check <- month_data |> 
   dplyr::group_by(utility, month, customer_type, report_year) |> 
-  dplyr::summarize(count = n()) |> 
+  dplyr::summarize(count = dplyr::n()) |> 
   dplyr::filter(count > 1)
 
 
@@ -223,7 +223,6 @@ DT::datatable(mwh_check)
 &nbsp;
 &nbsp;
 
-NEED TO EDIT WHEN DATA WAREHOUSE OUT
 These utility county values have fluctuated 200% or more compared to the average for that customer type over the last 3 years.
 
 ```{sql connection=db, echo = FALSE, output.var = "month_avg"}
@@ -264,9 +263,9 @@ Here are the specific utilities and customer types that had changes of over 200%
 
 ```{r, echo = FALSE}
 mwh_check <- mwh_check |> 
-  select(utility, utility_id, customer_type) |> 
-  distinct() |> 
-  arrange(utility, customer_type)
+  dplyr::select(utility, utility_id, customer_type) |> 
+  dplyr::distinct() |> 
+  dplyr::arrange(utility, customer_type)
 
 DT::datatable(mwh_check)
 ```

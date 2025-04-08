@@ -1,0 +1,73 @@
+---
+title: "fred-data"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(RPostgreSQL)
+library(httr)
+library(jsonlite)
+
+
+options(scipen = 999)
+
+dbname <- keyring::key_get("warehouse_name")
+host <- keyring::key_get("warehouse_host")
+port <- keyring::key_get("warehouse_port")
+user <- keyring::key_get("warehouse_user")
+password <- keyring::key_get("warehouse_password")
+
+db <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
+                 dbname = dbname, 
+                 host = host, 
+                 port = port, 
+                 user = user, 
+                 password = password)
+```
+
+Grab county fips codes from data warehouse
+
+```{sql connection=db, output.var = county_fips}
+SELECT co_name, co_code
+FROM reference.county  
+```
+
+
+```{r}
+fips_list <- pull(county_fips, co_code)
+
+fred_key <- keyring::key_get("fred_api_key")
+
+fred_gdp_process <- function(fips){
+  
+  link <- paste0("https://api.stlouisfed.org/fred/series/observations?series_id=GDPALL", fips, "&api_key=", fred_key, "&file_type=json")
+  
+  raw_fred <- GET(link)
+  
+  fred_content <- fromJSON(rawToChar(raw_fred$content))
+  
+  fred_content <- fred_content$observations |>
+    tibble() |> 
+    mutate(fips_code = fips, 
+           year = year(as.Date(date))) |> 
+    inner_join(county_fips, by = c("fips_code" = "co_code")) |> 
+    select(year, co_name, fips_code, value) |> 
+    rename(gdp = value)
+  
+  return(fred_content)
+}
+
+county_gdp_table <- fred_gdp_process(fips_list[1]) |> 
+  slice(0)
+
+for(i in fips_list){
+  
+  county_gdp_table <- fred_gdp_process(i) |> 
+    bind_rows(county_gdp_table)
+  
+}
+
+save(county_gdp_table, file = "../data/county_gdp.rda")
+```
+

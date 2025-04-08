@@ -1,0 +1,125 @@
+---
+title: "noaa-degree-day-data"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+
+mn_climate_regions <- as.character(c(2101:2109))
+
+cooling_links <- c(
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2024/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2023/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2022/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2021/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2020/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2019/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2018/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2017/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2016/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2015/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2014/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2013/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2012/ClimateDivisions.Cooling.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2011/ClimateDivisions.Cooling.txt"
+)
+
+link_cleaner <- function(link, year){
+    
+  x <- readLines(link)[145:153]
+  n <- 1
+  data_return <- tribble(~region_number, ~cooling_degree_days, ~year)
+  for(i in x){
+    region_data <- str_split(x[[n]][1], "\\|")[[1]]
+    region_number <- region_data[1]
+    cooling_degree_days <- sum(as.numeric(region_data[2:length(region_data)]))
+    data_return <- tribble(~region_number, ~cooling_degree_days, 
+                         region_number, cooling_degree_days) |> 
+      mutate(year = year) |> 
+      bind_rows(data_return) 
+    n <- n + 1
+  }
+  
+  data_return <- mutate(data_return, region_number = as.numeric(region_number))
+
+  return(data_return)
+}
+
+cooling_data <- link_cleaner(cooling_links[1], 2024) |> 
+  slice(0)
+
+start_year <- 2024
+
+for(i in cooling_links){
+  
+  cooling_data <- link_cleaner(i, start_year) |> 
+    bind_rows(cooling_data)
+  
+  start_year <- start_year - 1
+}
+```
+
+Heating Data
+```{r}
+heating_links <- c(
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2024/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2023/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2022/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2020/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2019/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2018/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2017/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2016/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2015/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2014/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2013/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2012/ClimateDivisions.Heating.txt", 
+  "https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data/2011/ClimateDivisions.Heating.txt"
+)
+
+link_cleaner <- function(link, year){
+    
+  x <- readLines(link)[145:153]
+  n <- 1
+  data_return <- tribble(~region_number, ~heating_degree_days, ~year)
+  for(i in x){
+    region_data <- str_split(x[[n]][1], "\\|")[[1]]
+    region_number <- region_data[1]
+    heating_degree_days <- sum(as.numeric(region_data[2:length(region_data)]))
+    data_return <- tribble(~region_number, ~heating_degree_days, 
+                         region_number, heating_degree_days) |> 
+      mutate(year = year) |> 
+      bind_rows(data_return) 
+    n <- n + 1
+  }
+  
+  data_return <- mutate(data_return, region_number = as.numeric(region_number))
+  return(data_return)
+}
+
+
+heating_data <- link_cleaner(heating_links[1], 2024) |> 
+  slice(0)
+
+start_year <- 2024
+
+for(i in heating_links){
+  
+  heating_data <- link_cleaner(i, start_year) |> 
+    bind_rows(heating_data)
+  
+  start_year <- start_year - 1
+}
+```
+
+```{r}
+county_climate_regions <- read_csv("../inst/extdata/climate_regions.csv") |> 
+  left_join(heating_data, by = c("climate_region_number" = "region_number")) |> 
+  left_join(cooling_data, by = c("climate_region_number" = "region_number", "year" = "year"))
+
+save(county_climate_regions, file = "../data/county_climate_regions.rda")
+
+```
+
+
