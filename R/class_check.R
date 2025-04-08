@@ -5,6 +5,7 @@
 #'
 #' @return An HTML markdown document
 #' @export
+#' @importFrom workflows predict.workflow
 #'
 #' @examples
 #' \dontrun{
