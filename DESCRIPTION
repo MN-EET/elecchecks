@@ -17,5 +17,6 @@ Imports:
     readxl,
     RPostgreSQL,
     stats,
-    tibble,
+    tibble
+Depends: 
     workflows
