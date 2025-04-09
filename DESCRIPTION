@@ -15,7 +15,9 @@ Imports:
     here,
     janitor,
     keyring,
+    parsnip,
     readxl,
+    recipes,
     RPostgreSQL,
     stats,
     tibble
