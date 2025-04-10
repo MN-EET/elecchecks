@@ -192,7 +192,7 @@ data_model <- combined_data |>
 
 mwh_model <- readRDS(paste0(data_path, "/linear_mwh_model.rds"))
 
-mwh_results <- parsnip::predict(mwh_model, new_data = data_model) |> 
+mwh_results <- workflows::predict(mwh_model, new_data = data_model) |> 
   dplyr::bind_cols(predict(mwh_model, new_data = data_model, type = "conf_int")) |> 
   dplyr::bind_cols(data_model |> dplyr::select(utility, utility_id, mwh_delivered, utility_type, customer_type, customer_count, revenue)) |>
   dplyr::select(utility_id, utility, mwh_delivered, .pred, .pred_lower, .pred_upper, customer_type, customer_count, revenue)
