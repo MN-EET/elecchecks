@@ -22,4 +22,5 @@ Imports:
     stats,
     tibble
 Depends: 
-    workflows
+    workflows, 
+    parsnip
