@@ -39,7 +39,7 @@ Check for duplicate entries
 ```{r, echo = FALSE}
 
 dup_check <- county_data |>
-  dplyr::mutate(row_id = paste(utility_id, county_name, as.character(year), sep = "_")) |>
+  dplyr::mutate(row_id = paste(utility_id, county_name, as.character(report_year), sep = "_")) |>
   dplyr::group_by(row_id) |>
   dplyr::mutate(count = dplyr::n()) |>
   dplyr::filter(count > 1)

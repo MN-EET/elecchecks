@@ -72,12 +72,6 @@ The following ID's are not valid
 
 ```{r, echo = FALSE}
 valid_id_check(month_data, utility_table)
-# u_ids <- month_data |> 
-#   dplyr::filter(!c(utility_id %in% utility_table$utility_id)) |> 
-#   dplyr::select(utility, utility_id) |> 
-#   dplyr::distinct(utility, utility_id)
-# 
-# DT::datatable(u_ids)
 
 ```
 
@@ -158,7 +152,7 @@ if(nrow(month_check) == 0){
 
 Check that each utility/month/customer type combination appears only once.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 
 dup_check <- month_data |> 
   dplyr::group_by(utility, month, customer_type, report_year) |> 
@@ -198,7 +192,7 @@ if(nrow(mwh_check) == 0){
   
 } else{
   
-  print("The following utilities have non-valid MWH values. ")
+  print("The following utilities have non-valid MWH values.")
   DT::datatable(mwh_check)
   
 }
