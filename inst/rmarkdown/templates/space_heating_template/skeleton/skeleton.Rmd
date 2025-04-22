@@ -95,9 +95,9 @@ ORDER BY utility
 ```{r, echo = FALSE}
 
 mwh_check <- space_heating_data |> 
-  dplyr::filter(total_mwh != 0 & is.na(total_mwh) == FALSE) |> 
+  dplyr::filter(mwh_delivered != 0 & is.na(mwh_delivered) == FALSE) |> 
   dplyr::left_join(space_heating_avg, by = c("utility_id" = "utility_id")) |> 
-  dplyr::mutate(percent_diff = (total_mwh / mwh_avg) - 1) |> 
+  dplyr::mutate(percent_diff = (mwh_delivered / mwh_avg) - 1) |> 
   dplyr::filter(abs(percent_diff) >= .2)
 
 DT::datatable(mwh_check)
