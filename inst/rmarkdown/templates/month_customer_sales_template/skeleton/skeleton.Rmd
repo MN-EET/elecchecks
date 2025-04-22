@@ -226,7 +226,7 @@ WITH years_use AS (
 	ORDER BY report_year DESC 
 	LIMIT 3
 )
-SELECT TO_CHAR(m.utility_id, 'FM9999') AS utility_id, m.utility, m.month, m.customer_type, 
+SELECT m.utility_id, m.utility, m.month, m.customer_type, 
 	ROUND(AVG(m.customer_count)) AS avg_customer_count, ROUND(AVG(m.mwh_delivered)) AS avg_mwh
 FROM energy.month_customer_sales m
 WHERE m.report_year IN (SELECT * FROM years_use) 
