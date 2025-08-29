@@ -130,10 +130,10 @@ SELECT c.utility_id, c.utility, c.report_year, c.county_name, (c.mwh_delivered /
 ```{r, echo = FALSE}
 data_path <- here::here("data")
 
-load(here::here("data/county_gdp.rda"))
+data("county_gdp", package = "elecchecks")
 #load(paste0(data_path, "/county_gdp.rda"))
-load(paste0(data_path, "/county_climate_regions.rda"))
-
+#load(paste0(data_path, "/county_climate_regions.rda"))
+data("county_climate_regions", package = "elecchecks")
 
 county_sales <- county_sales |> 
   dplyr::left_join(county_gdp_table, by = c("report_year" = "year", "county_name" = "co_name")) |> 
