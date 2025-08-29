@@ -130,7 +130,8 @@ SELECT c.utility_id, c.utility, c.report_year, c.county_name, (c.mwh_delivered /
 ```{r, echo = FALSE}
 data_path <- here::here("data")
 
-load(paste0(data_path, "/county_gdp.rda"))
+load(here::here("data/county_gdp.rda"))
+#load(paste0(data_path, "/county_gdp.rda"))
 load(paste0(data_path, "/county_climate_regions.rda"))
 
 
