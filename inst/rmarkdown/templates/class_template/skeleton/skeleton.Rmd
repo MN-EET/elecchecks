@@ -191,7 +191,9 @@ data_model <- combined_data |>
 
 #load workflow
 
-mwh_model <- readRDS(paste0(data_path, "/linear_mwh_model.rds"))
+#mwh_model <- readRDS(paste0(data_path, "/linear_mwh_model.rds"))
+file_path <- system.file("extdata", "linear_mwh_model.rds", package = "elecchecks")
+mwh_model <- readRDS(file_path)
 
 mwh_results <- stats::predict(mwh_model, new_data = data_model) |> 
   dplyr::bind_cols(stats::predict(mwh_model, new_data = data_model, type = "conf_int")) |> 
