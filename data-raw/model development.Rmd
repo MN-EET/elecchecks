@@ -215,9 +215,10 @@ for(i in heating_links){
 Combine county names with climate region numbers and apply county weights
 
 ```{r}
-county_climate_regions <- read_csv("inst/extdata/climate_regions.csv") |> 
-  left_join(heating_data, by = c("climate_region_number" = "region_number")) |> 
-  left_join(cooling_data, by = c("climate_region_number" = "region_number", "year" = "year"))
+load(here::here("data/county_climate_regions.rda")) 
+# county_climate_regions <- county_climate_regions |> 
+#   left_join(heating_data, by = c("climate_region_number" = "region_number", "year" = "year")) |> 
+#   left_join(cooling_data, by = c("climate_region_number" = "region_number", "year" = "year"))
 
 county_sales <- county_sales |> 
   left_join(county_climate_regions, by = c("report_year" = "year", "county_name" = "county_name")) |> 
@@ -412,7 +413,8 @@ rmse(predictions_23, truth = mwh_delivered, estimate = .pred)
 
 Linear model
 ```{r}
-saveRDS(linear_mwh, "data/linear_mwh_model.rds")
+#saveRDS(linear_mwh, here::here("data/linear_mwh_model.rds"))
+save(linear_mwh, file = here::here("data/linear_mwh_model.rda"))
 ```
 
 
