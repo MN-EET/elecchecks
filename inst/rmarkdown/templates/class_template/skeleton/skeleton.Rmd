@@ -151,7 +151,7 @@ ORDER BY
 
 ```{r, echo = FALSE}
 
-file_check |> 
+outliers <- file_check |> 
   dplyr::left_join(avg_sales, by = c("utility" = "utility", "utility_id" = "utility_id", "customer_type" = "customer_type")) |> 
   dplyr::filter(complete.cases(mwh_delivered), 
                 mwh_delivered > 0) |> 
@@ -159,7 +159,7 @@ file_check |>
   dplyr::filter(abs(percent_dif) > 1) |> 
   dplyr::select(utility, utility_id, customer_type, mwh_delivered, avg_mwh_delivered, percent_dif, customer_count, avg_customer_count, revenue, avg_revenue)
   
-  
+DT::datatable(outliers)
 
 ```
 
