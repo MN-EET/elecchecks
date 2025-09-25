@@ -75,8 +75,7 @@ dup_name_check(space_heating_data)
 
 ```
 
-NEED TO EDIT WHEN DATA WAREHOUSE OUT
-These utility county values have fluctuated 20% or more compared to the average over the last 3 years.
+These values have fluctuated by at least 100% from previous 3 year average. 
 
 ```{sql connection=db, echo = FALSE, output.var = "space_heating_avg"}
 WITH years_use AS(
@@ -98,7 +97,7 @@ mwh_check <- space_heating_data |>
   dplyr::filter(mwh_delivered != 0 & is.na(mwh_delivered) == FALSE) |> 
   dplyr::left_join(space_heating_avg, by = c("utility_id" = "utility_id")) |> 
   dplyr::mutate(percent_diff = (mwh_delivered / mwh_avg) - 1) |> 
-  dplyr::filter(abs(percent_diff) >= .2)
+  dplyr::filter(abs(percent_diff) >= 1)
 
 DT::datatable(mwh_check)
 
