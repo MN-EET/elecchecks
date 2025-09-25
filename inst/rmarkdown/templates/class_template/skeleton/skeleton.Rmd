@@ -102,126 +102,77 @@ class_data |>
   dplyr::filter(!c(class %in% valid_classes$customer_type) & class != "Entered Total")
 ```
 
-Model outliers that warrant a follow up. 
+Check MWH outliers that warrant a follow up. These entries deviate more than 100% (either direction) from the previous 3 years of entries from these utilities.
 
-```{sql connection=db, output.var = 'utility_type_table', echo = FALSE}
-/*Query the customer class data from the data warehouse.*/
-SELECT i.mn_utility_id AS utility_id, i.utility_type
-FROM energy.utility_info i 
+```{sql connection=db, echo = FALSE, output.var = "avg_sales"}
 
-```
+WITH max_year AS (
 
-```{sql connection=db, output.var = 'county_sales', echo = FALSE}
-/*
-Query county level sales from the data warehouse. This will represent the proportion of sales from a given county, not the total MWH sold to each county.
-*/
+	SELECT MAX(report_year) AS max_year
+	
+	FROM energy.all_class
 
-WITH total_mwh AS(
-	SELECT utility_id, utility, report_year, mwh_delivered AS total_mwh
-	FROM energy.all_class ac 
-	WHERE customer_type = 'Total' /*AND report_year != 2023*/
+), 
+
+year_subset AS (
+
+	SELECT * 
+
+	FROM energy.all_class 
+
+	WHERE report_year > (SELECT MAX(max_year) FROM max_year) - 3
+
 )
-SELECT c.utility_id, c.utility, c.report_year, c.county_name, (c.mwh_delivered / t.total_mwh) AS county_share
-	FROM energy.county_sales c
-	LEFT JOIN total_mwh t ON c.utility_id = t.utility_id AND c.utility = t.utility AND c.report_year = t.report_year
+
+SELECT 
+	utility, 
+	utility_id, 
+	customer_type, 
+	ROUND(AVG(customer_count))AS avg_customer_count, 
+	ROUND(AVG(mwh_delivered)) AS avg_mwh_delivered, 
+	ROUND(AVG(revenue)) AS avg_revenue
+	
+FROM year_subset
+
+GROUP BY 
+	utility, 
+	utility_id, 
+	customer_type
+
+HAVING ROUND(AVG(mwh_delivered)) IS NOT NULL	
+	
+ORDER BY 
+	utility, 
+	customer_type
+
+
 ```
 
 
 ```{r, echo = FALSE}
-data_path <- here::here("data")
 
-data("county_gdp", package = "elecchecks")
-#load(paste0(data_path, "/county_gdp.rda"))
-#load(paste0(data_path, "/county_climate_regions.rda"))
-data("county_climate_regions", package = "elecchecks")
-
-county_sales <- county_sales |> 
-  dplyr::left_join(county_gdp_table, by = c("report_year" = "year", "county_name" = "co_name")) |> 
-  dplyr::mutate(gdp_share = as.numeric(gdp) * county_share) |> 
-  dplyr::select(utility_id, utility, report_year, county_name, county_share, gdp_share) |> 
-  dplyr::left_join(county_climate_regions, by = c("report_year" = "year", "county_name" = "county_name")) |> 
-  dplyr::mutate(heating_degree_days_weighted = county_share * heating_degree_days, 
-         cooling_degree_days_weighted = county_share * cooling_degree_days) |> 
-  dplyr::select(utility_id, utility, report_year, county_name, county_share, gdp_share, heating_degree_days_weighted, 
-         cooling_degree_days_weighted)
-
-county_vars <- county_sales |> 
-  tidyr::pivot_wider(id_cols = c(utility_id, utility, report_year), names_from = county_name, values_from = county_share, names_prefix = "county_share_") |> 
-  janitor::clean_names() |> 
-  dplyr::mutate(dplyr::across(starts_with("county_share_"), .fns = ~tidyr::replace_na(.x, 0)))
-
-
-gdp_vars <- county_sales |> 
-  tidyr::pivot_wider(id_cols = c(utility_id, utility, report_year), names_from = county_name, values_from = gdp_share, names_prefix = "gdp_share_") |> 
-  janitor::clean_names() |> 
-  dplyr::mutate(dplyr::across(starts_with("gdp_share_"), .fns = ~tidyr::replace_na(.x, 0)))
-
-heating_vars <- county_sales |> 
-  tidyr::pivot_wider(id_cols = c(utility_id, utility, report_year), names_from = county_name, values_from = heating_degree_days_weighted, names_prefix = "heating_days_") |> 
-  janitor::clean_names() |> 
-  dplyr::mutate(dplyr::across(starts_with("heating_days_"), .fns = ~tidyr::replace_na(.x, 0)))
-
-cooling_vars <- county_sales |> 
-  tidyr::pivot_wider(id_cols = c(utility_id, utility, report_year), names_from = county_name, values_from = cooling_degree_days_weighted, names_prefix = "cooling_days_") |> 
-  janitor::clean_names() |> 
-  dplyr::mutate(dplyr::across(starts_with("cooling_days_"), .fns = ~tidyr::replace_na(.x, 0)))
-
-
-combined_data <- class_data |> 
-  dplyr::left_join(county_vars, by = c("utility_id" = "utility_id", "utility" = "utility", "report_year" = "report_year")) |> 
-  dplyr::left_join(gdp_vars, by = c("utility_id" = "utility_id", "utility" = "utility", "report_year" = "report_year")) |> 
-  dplyr::left_join(heating_vars, by = c("utility_id" = "utility_id", "utility" = "utility", "report_year" = "report_year")) |> 
-  dplyr::left_join(cooling_vars, by = c("utility_id" = "utility_id", "utility" = "utility", "report_year" = "report_year")) |>
-  dplyr::left_join(utility_type_table, by = "utility_id") |> 
-  dplyr::mutate(customer_type = as.factor(customer_type), 
-                customer_count = as.integer(customer_count)) |> 
-  dplyr::mutate(utility_type = as.factor(utility_type)) 
+file_check |> 
+  dplyr::left_join(avg_sales, by = c("utility" = "utility", "utility_id" = "utility_id", "customer_type" = "customer_type")) |> 
+  dplyr::filter(complete.cases(mwh_delivered), 
+                mwh_delivered > 0) |> 
+  dplyr::mutate(percent_dif = (mwh_delivered / avg_mwh_delivered) - 1 ) |> 
+  dplyr::filter(abs(percent_dif) > 1) |> 
+  dplyr::select(utility, utility_id, customer_type, mwh_delivered, avg_mwh_delivered, percent_dif, customer_count, avg_customer_count, revenue, avg_revenue)
+  
+  
 
 ```
 
-```{r, echo = FALSE}
-# #subset data for modelling
-# 
-# data_model <- combined_data |> 
-#   dplyr::filter(!c(utility %in% c("Xcel Energy", "Great River Energy")), 
-#                 !c(customer_type %in% c("Industrial", "Total", "Irrigation")), 
-#                 complete.cases(utility_type), 
-#                 mwh_delivered != 0) |> 
-#   dplyr::filter(customer_type != "Entered Total") 
-# 
-# #load workflow
-# 
-# #mwh_model <- readRDS(system.file("extdata", "linear_mwh_model.rds", package = "elecchecks"))
-# #file_path <- system.file("data", "linear_mwh_model.rds", package = "elecchecks")
-# #mwh_model <- readRDS(file_path)
-# 
-# data("linear_mwh_model", package = "elecchecks")
-# 
-# mwh_results <- predict(linear_mwh, new_data = data_model) |> 
-#   dplyr::bind_cols(predict(linear_mwh, new_data = data_model, type = "conf_int")) |> 
-#   dplyr::bind_cols(data_model |> dplyr::select(utility, utility_id, mwh_delivered, utility_type, customer_type, customer_count, revenue)) |>
-#   dplyr::select(utility_id, utility, mwh_delivered, .pred, .pred_lower, .pred_upper, customer_type, customer_count, revenue)
 
-``` 
 
-These utilities have entries that are significantly different than would be predicted. Some may have entered incorrect units (KWH instead of MWH).
-Note: Xcel Energy and Great River Energy have been excluded from the model. Industrial, Total, and Irrigation customers are not checked, but issues may exist there as well. 
 
-```{r, echo = FALSE}
-# outliers <- mwh_results |> 
-#   dplyr::filter(mwh_delivered > .pred_upper | mwh_delivered < .pred_lower) |> 
-#   dplyr::mutate(maybe_unit_issue = dplyr::case_when(
-#     abs(((mwh_delivered / 1000) / .pred) - 1) < .5 ~ TRUE, 
-#     TRUE ~ FALSE
-#   ), 
-#   .pred = round(.pred), 
-#   .pred_lower = round(.pred_lower), 
-#   .pred_upper = round(.pred_upper)) |> 
-#   dplyr::relocate(maybe_unit_issue, .before = utility) |> 
-#   dplyr::arrange(utility)
-# 
-# DT::datatable(outliers)
-```
+
+
+
+
+
+
+
 
 
 
